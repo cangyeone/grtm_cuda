@@ -1,0 +1,111 @@
+#include "../popm.h" 
+
+
+ssrc moment_source(float32 k, cplx w, parameter spar, int s_layer, float32 zs, grtc *grt){
+    int i, j; 
+    cplx ssh; 
+    cplx s0[2], s1[2], s2[2];
+    cplx tmp1;
+    cplx wru0[2][2], wru1[2][2], wrd0[2][2], wrd1[2][2];  
+    cplx sexd[2], sexu[2]; 
+    cplx iden[2][2]; 
+    //cplx su0[2], su1[2], su2[2]; 
+    //cplx sd0[2], sd1[2], sd2[2]; 
+    //cplx shu1, shd1, shu2, shd2;  
+    ssrc src; 
+
+    iden[0][0] = iden[1][1] = 1.0; 
+    iden[1][0] = iden[0][1] = 0.0; 
+    sexd[0] = exp(-spar.r * (spar.h - zs)); 
+    sexd[1] = exp(-spar.v * (spar.h - zs)); 
+    sexu[0] = exp(-spar.r * (zs)); 
+    sexu[1] = exp(-spar.v * (zs)); 
+
+    tmp1 = spar.b / (2.0 * spar.u * spar.a * w); 
+
+    ssh = 1. / (2. * spar.u * spar.v); 
+    s2[0] = tmp1 * k / spar.r * k * spar.b; 
+    s2[1] = - k * tmp1 / spar.r * spar.a * spar.r; 
+    s1[0] = tmp1 / spar.v * (-2.0) * k * spar.v * spar.b; 
+    s1[1] = tmp1 / spar.v * (k*k + spar.v * spar.v) * spar.a; 
+    s0[0] = tmp1 * spar.r * spar.b; 
+    s0[1] = tmp1 * spar.a * (-k); 
+    for(i=0;i<2;i++){
+        for(j=0;j<2;j++){
+            //ER-I
+            wru0[i][j] = sexd[i] * grt[s_layer+1].rdu1[i][j] * sexd[j] - iden[i][j]; 
+            //I-ER
+            wrd0[i][j] = iden[i][j] - sexu[i] * grt[s_layer-1+1].rud1[i][j] * sexu[j]; 
+            //ER+I
+            wru1[i][j] = sexd[i] * grt[s_layer+1].rdu1[i][j] * sexd[j] + iden[i][j]; 
+            //I+ER
+            wrd1[i][j] = iden[i][j] + sexu[i] * grt[s_layer-1+1].rud1[i][j] * sexu[j]; 
+        }
+    }
+    for(i=0;i<2;i++){
+        src.su0[i] = wru1[i][0] * s0[0] + wru1[i][1] * s0[1]; 
+        src.sd0[i] = wrd1[i][0] * s0[0] + wrd1[i][1] * s0[1]; 
+        src.su1[i] = wru0[i][0] * s1[0] + wru0[i][1] * s1[1]; 
+        src.sd1[i] = wrd0[i][0] * s1[0] + wrd0[i][1] * s1[1];  
+        src.su2[i] = wru1[i][0] * s2[0] + wru1[i][1] * s2[1]; 
+        src.sd2[i] = wrd1[i][0] * s2[0] + wrd1[i][1] * s2[1];                
+    }
+    src.shu1 = (1. + sexd[1] * grt[s_layer+1].rdu0 * sexd[1]) * spar.v * ssh;
+    src.shd1 = (sexu[1] * grt[s_layer-1+1].rud0 * sexu[1] - 1.) * spar.v * ssh;
+    src.shu2 = (1. + sexd[1] * grt[s_layer+1].rdu0 * sexd[1]) * k * ssh;
+    src.shd2 = (sexu[1] * grt[s_layer-1+1].rud0 * sexu[1] - 1.) * k * ssh;
+    return src; 
+}
+
+
+ssrc single_source(float32 k, cplx w, parameter spar, int s_layer, float32 zs, grtc *grt){
+    int i, j; 
+    cplx ssh; 
+    cplx tmp1; 
+    cplx f0[2], f1[2]; 
+    cplx sexd[2], sexu[2]; 
+    cplx iden[2][2]; 
+    cplx wru0[2][2], wrd0[2][2], wru1[2][2], wrd1[2][2]; 
+    ssrc src; 
+
+    iden[0][0] = iden[1][1] = 1.0; 
+    iden[1][0] = iden[0][1] = 0.0; 
+    sexd[0] = exp(-spar.r * (spar.h - zs)); 
+    sexd[1] = exp(-spar.v * (spar.h - zs)); 
+    sexu[0] = exp(-spar.r * (zs)); 
+    sexu[1] = exp(-spar.v * (zs)); 
+
+    tmp1 = spar.b / (2.0 * spar.u * spar.a * w * spar.r * spar.v); 
+
+    ssh = 1. / (2. * spar.u * spar.v); 
+
+    f0[0] = spar.b * spar.v * spar.r * tmp1; 
+    f0[1] = - spar.a * k * spar.r * tmp1; 
+    f1[0] = k * spar.b * spar.v * tmp1; 
+    f1[1] = - spar.a * spar.r * spar.v * tmp1; 
+   
+    for(i=0;i<2;i++){
+        for(j=0;j<2;j++){
+            //ER-I
+            wru0[i][j] = sexd[i] * grt[s_layer+1].rdu1[i][j] * sexd[j] - iden[i][j]; 
+            //I-ER
+            wrd0[i][j] = iden[i][j] - sexu[i] * grt[s_layer-1+1].rud1[i][j] * sexu[j]; 
+            //ER+I
+            wru1[i][j] = sexd[i] * grt[s_layer+1].rdu1[i][j] * sexd[j] + iden[i][j]; 
+            //I+ER
+            wrd1[i][j] = iden[i][j] + sexu[i] * grt[s_layer-1+1].rud1[i][j] * sexu[j]; 
+        }
+    }
+
+    for(i=0;i<2;i++){
+        src.gu0[i] = wru0[i][0] * f0[0] + wru0[i][1] * f0[1]; 
+        src.gd0[i] = wrd0[i][0] * f0[0] + wrd0[i][1] * f0[1]; 
+        src.gu1[i] = wru1[i][0] * f1[0] + wru1[i][1] * f1[1]; 
+        src.gd1[i] = wrd1[i][0] * f1[0] + wrd1[i][1] * f1[1]; 
+    }
+    src.gshu = (1. + sexd[1] * grt[s_layer+1].rdu0 * sexd[1]) * ssh;
+
+    src.gshd = (sexu[1] * grt[s_layer-1+1].rud0 * sexu[1] + 1.) * ssh;
+    return src; 
+}
+

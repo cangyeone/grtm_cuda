@@ -1,0 +1,121 @@
+/*
+ *  matrix.c
+ *
+ *  Created on: 2022/12/01
+ *      Author: Yu Ziye 
+ */
+#include "../mathematics.h"
+
+void cplx_mm_4(cplx a[4][4], cplx b[4][4], cplx c[4][4])
+{
+    int i,j,k;
+    int n = 4; 
+    register cplx temp;
+    for(i=0;i<4;i++){
+        for(j=0;j<4;j++){
+            c[i][j] = 0.0; 
+        }
+    }
+    for(k=0;k<n;k++)
+    {
+        for(i=0;i<n;i++)
+        {
+            temp=a[i][k];
+            for(j=0;j<n;j++)
+            {
+                c[i][j]+=temp*b[k][j];
+            }
+        }
+    }
+}
+
+void cplx_mm_2(cplx a[2][2], cplx b[2][2], cplx c[2][2])
+{
+    int i,j,k;
+    int n = 2; 
+    register cplx temp;
+    for(i=0;i<n;i++){
+        for(j=0;j<n;j++){
+            c[i][j] = 0.0; 
+        }
+    }
+    for(k=0;k<n;k++)
+    {
+        for(i=0;i<n;i++)
+        {
+            temp=a[i][k];
+            for(j=0;j<n;j++)
+            {
+                c[i][j]+=temp*b[k][j];
+            }
+        }
+    }
+}
+
+void cplx_mmc_4(cplx a[4][4], cplx b[4][4])
+{
+    int i,j,k;
+    int n = 4; 
+    cplx c[4][4]; 
+    register cplx temp;
+    for(i=0;i<n;i++)
+    {
+        for(j=0;j<n;j++)
+        {
+            c[i][j] = 0.;
+        }
+    }
+    for(k=0;k<n;k++)
+    {
+        for(i=0;i<n;i++)
+        {
+            temp=a[i][k];
+            for(j=0;j<n;j++)
+            {
+                c[i][j]+=temp*b[k][j];
+            }
+        }
+    }
+    for(i=0;i<n;i++)
+    {
+        for(j=0;j<n;j++)
+        {
+            b[i][j] = c[i][j];
+        }
+    }
+}
+
+
+
+void cplx_mmc_2(cplx a[2][2], cplx b[2][2])
+{
+    int i,j,k;
+    int n = 2; 
+    cplx c[2][2]; 
+    register cplx temp;
+    for(i=0;i<n;i++)
+    {
+        for(j=0;j<n;j++)
+        {
+            c[i][j] = 0.;
+        }
+    }
+    for(k=0;k<n;k++)
+    {
+        for(i=0;i<n;i++)
+        {
+            temp=a[i][k];
+            for(j=0;j<n;j++)
+            {
+                c[i][j]+=temp*b[k][j];
+            }
+        }
+    }
+    for(i=0;i<n;i++)
+    {
+        for(j=0;j<n;j++)
+        {
+            b[i][j] = c[i][j];
+        }
+    }
+}
